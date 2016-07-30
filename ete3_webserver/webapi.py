@@ -1,14 +1,15 @@
-import time
 import gzip
 import logging as log
 from StringIO import StringIO
 from bottle import (run, get, post, request, route, response, abort, hook,
                     error, HTTPResponse)
 
+from tree_handler import WebTreeHandler
 
 LOADED_TREES = {}
 COMPRESS_DATA = True
 COMPRESS_MIN_BYTES = 10000
+TREE_HANDLER = WebTreeHandler
 
 def web_return(html, response):
     if COMPRESS_DATA and len(html) >= COMPRESS_MIN_BYTES:
@@ -63,7 +64,7 @@ def get_tree_image():
         return web_return('No tree provided', response)
 
     print newick
-    h = WebTreeHandler(newick)
+    h = TREE_HANDLER(newick)
     LOADED_TREES[h.__hash__] = h
 
     # Renders initial tree
@@ -93,25 +94,9 @@ def run_action(treeid, nodeid, action):
 def list_actions(treeid, nodeid, faceid):
     pass
 
-from ete3 import Tree
-class WebTreeHandler(object):
-    def __init__(self, newick):
-        self.tree = Tree(newick)
-        # Initialze node internal IDs
-        for index, n in enumerate(self.tree.traverse('preorder')):
-            n._nid = index
+def start_server(handler=None, host="localhost", port=8989):
+    global TREE_HANDLER
+    if handler:
+        TREE_HANDLER = handler
 
-    def redraw(self):
-        base64_img, img_map = self.tree.render("%%return.PNG")
-
-        html_img = """<img src="data:image/gif;base64,%s">""" %(base64_img)
-        return html_img
-
-    def layout_fn(self):
-        pass
-    def action_root(self, target):
-        outgroup = target & target
-        self.tree.set_outgroup(outgroup)
-
-if __name__ == "__main__":
-    run(host="localhost", port=8989, server='cherrypy')
+    run(host=host, port=port, server='cherrypy')
