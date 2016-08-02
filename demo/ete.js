@@ -1,6 +1,5 @@
 /*  it requires jquery loaded */
-
-var ete_webplugin_URL = "http://phylo.cs.nmsu.edu:8008";
+var ete_webplugin_URL = "http://localhost:8989";
 var loading_img = '<img border=0 src="loader.gif">';
 
 function update_server_status(){
@@ -10,54 +9,37 @@ function update_server_status(){
 }
 
 function get_tree_image(newick, recipient){
-  $(recipient).html(loading_img);
+  var treeid = makeid();
+  $(recipient).html('<div id="' + treeid + '">' + loading_img + '</div>');
   //$(recipient).fadeTo(500, 0.2);
-  var params = {'newick':newick};
-  $(recipient).load(ete_webplugin_URL+'/get_tree_image', params,
+  var params = {'newick':newick, 'treeid':treeid};
+  $('#'+treeid).load(ete_webplugin_URL+'/get_tree_image', params,
     function() {
-            $(recipient).fadeTo(100, 0.9);
+            $('#'+treeid).fadeTo(100, 0.9);
   });
 }
 
-
-
-function draw_tree(treeid, newick, recipient, extra_params){
-  var params = {"tree": newick, "treeid": treeid};
-  if ( extra_params != undefined ){
-    var params =  $.extend(params, extra_params);
-    }
-
-  $(recipient).html(loading_img);
-  //$(recipient).fadeTo(500, 0.2);
-  $(recipient).load(ete_webplugin_URL+'/draw', params, function() {
-          $(recipient).fadeTo(100, 0.9);
-  });
-}
-
-function show_context_menu(treeid, nodeid, actions, textface){
-  if ( textface==undefined ){
-    var textface = "";
-    }
-
+function show_actions(treeid, nodeid, faceid){
   $("#popup").html(loading_img);
-  $('#popup').load(ete_webplugin_URL+'/get_menu', {"treeid": treeid, "show_actions": actions, "nid": nodeid, "textface": textface}
-                  );}
-
-function run_action(treeid, nodeid, aindex, search_term){
-  var recipient = "#ETE_tree_"+treeid;
-  //$(recipient).html(loading_img);
-  $(recipient).fadeTo(500, 0.3);
-  $(recipient).load(ete_webplugin_URL+'/action', {"treeid": treeid, "nid": nodeid, "aindex": aindex, "search_term": search_term}, function() {
-          $(recipient).fadeTo(250, 1);
-      });
+  var params = {"treeid": treeid, "nodeid": nodeid, "faceid": faceid};
+  $('#popup').load(ete_webplugin_URL+'/get_actions', params);
 }
 
-function random_tid(){
-    return Math.ceil(Math.random()*10000000);
+function run_action(treeid, nodeid, faceid, aindex){
+  $("#popup").hide();
+  $('#'+treeid).html(loading_img);
+  console.log(treeid, nodeid, faceid, aindex, $('#'+treeid));
+  var params = {"treeid": treeid, "nodeid": nodeid, "faceid": faceid, "aindex":aindex};
+  $('#'+treeid).load(ete_webplugin_URL+'/run_action', params,
+    function() {
+      console.log('run action');
+            $('#'+treeid).fadeTo(100, 0.9);
+  });
 }
+
 
 function bind_popup(){
-$(".ete_tree_img").bind('click',function(e){
+  $(".ete_tree_img").bind('click',function(e){
                           $("#popup").css('left',e.pageX-2 );
                           $("#popup").css('top',e.pageY-2 );
                           $("#popup").css('position',"absolute" );
@@ -70,19 +52,44 @@ function hide_popup(){
   $('#popup').hide();
 }
 
+function highlight_node(treeid, nodeid, faceid, x, y, width, height){
+  return;
+  console.log(treeid, nodeid, x, y, width, height);
+  var img = $('#img_'+treeid);
+  var offset = img.offset();
+  console.log(img);
+  console.log(offset);
 
-function search_in_tree(treeid, search_index_action, search_term, term_target){
-  var term = term_target + "::" + search_term;
-  run_action(treeid, "", search_index_action, term);
+  $("#highlighter").show();
+  $("#highlighter").css("top", offset.top+y-1);
+  $("#highlighter").css("left", offset.left+x-1);
+  $("#highlighter").css("width", width+1);
+  $("#highlighter").css("height", height+1);
+
+}
+function unhighlight_node(){
+  console.log("unhighlight");
+  $("#highlighter").hide();
 }
 
-function show_box(e, box) {
-  box.draggable({ handle: '.text_header_box' });
-  box.css('left',e.pageX+5 );
-  box.css('top',e.pageY+5 );
-  box.css('position',"absolute" );
-  box.show();
+function makeid()
+{
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 5; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
 }
+
+
+///////OLD STUFF
+
+
+
+
+
 
 $(document).ready(function(){
   hide_popup();

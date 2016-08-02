@@ -103,7 +103,7 @@ cursor: auto;
 display:none;
 z-index:100;
 border: 1px dotted #555;
-text-align:left; 
+text-align:left;
 background-color: #fff;
 }
 #search_in_tree_box{
@@ -113,3 +113,13 @@ border: 1px dotted #555;
 text-align:center;
 background-color: #fff;
 }
+
+#highlighter {
+  position: absolute;
+  visibility: visible;
+  z-index:100;
+  top:0;
+  left:0;
+   width: 70px; height: 70px;
+   border: 1px solid indianred;
+  }

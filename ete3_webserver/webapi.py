@@ -4,7 +4,7 @@ from StringIO import StringIO
 from bottle import (run, get, post, request, route, response, abort, hook,
                     error, HTTPResponse)
 
-from tree_handler import WebTreeHandler
+from tree_handler import WebTreeHandler, NodeActions, TreeStyle
 
 LOADED_TREES = {}
 COMPRESS_DATA = True
@@ -59,44 +59,67 @@ def get_tree_image():
     else:
         source_dict = request.POST
     newick = source_dict.get('newick', '').strip()
+    treeid = source_dict.get('treeid', '').strip()
 
-    if not newick:
+    if not newick or not treeid:
         return web_return('No tree provided', response)
 
-    print newick
-    h = TREE_HANDLER(newick)
-    LOADED_TREES[h.__hash__] = h
+    h = TREE_HANDLER(newick, treeid)
+    LOADED_TREES[h.treeid] = h
 
     # Renders initial tree
-
     img = h.redraw()
     return web_return(img, response)
 
-@route('/update_tree/<treeid>/<nodeid>/<action>')
-def test_change(treeid, nodeid, action):
-    t = TREES[treeid]
-    nodeid = int(nodeid)
-    found = False
-    for target_node in t.traverse():
-        if nodeid == target_node.__id:
-            found = True
-            break
-    if not found:
-        return webr_eturn('<b>Node not found</b>', response)
+@post('/get_actions')
+def get_action():
+    if request.json:
+        source_dict = request.json
+    else:
+        source_dict = request.POST
+
+    treeid = source_dict.get('treeid', '').strip()
+    nodeid = source_dict.get('nodeid', '').strip()
+    if treeid and nodeid:
+        html = "<ul class='ete_action_list'>"
+        h = LOADED_TREES[treeid]
+        for aindex, aname in h.get_avail_actions(nodeid):
+            html += """<li><a  onClick="run_action('%s', '%s', '%s', '%s');" >%s</a></li>""" %(treeid, nodeid, '', aindex, aname)
+        html += "</ul>"
+    return web_return(html, response)
+
+@post('/run_action')
+def run_action():
+    print "RUN ACTION"
+    if request.json:
+        source_dict = request.json
+    else:
+        source_dict = request.POST
+
+    treeid = source_dict.get('treeid', '').strip()
+    nodeid = source_dict.get('nodeid', '').strip()
+    faceid = source_dict.get('faceid', '').strip()
+    aindex = source_dict.get('aindex', '').strip()
 
 
-@route('/action/<nodeid>/faceid/<action>')
-def run_action(treeid, nodeid, action):
-    action_fn = handler.gettattr(action, nodeid)
-    new_img, status, data = action(params)
-    return new_img
+    if treeid and nodeid and aindex:
+        h = LOADED_TREES[treeid]
+        h.run_action(aindex, nodeid)
+        img = h.redraw()
 
-def list_actions(treeid, nodeid, faceid):
-    pass
+    return web_return(img, response)
 
-def start_server(handler=None, host="localhost", port=8989):
+
+def start_server(node_actions=None, tree_style=None, host="localhost", port=8989):
     global TREE_HANDLER
-    if handler:
-        TREE_HANDLER = handler
+    TREE_HANDLER = WebTreeHandler
+    if node_actions:
+        TREE_HANDLER.actions = node_actions
+    else:
+        TREE_HANDLER.actions = NodeActions()
+    if tree_style:
+        TREE_HANDLER.tree_style = tree_style
+    else:
+        TREE_HANDLER.tree_style = TreeStyle()
 
     run(host=host, port=port, server='cherrypy')
