@@ -1,8 +1,9 @@
 ### Dependencies
 
-- ete3 
-- bottle and cherrypy
+- ete3 from github (master branch)
+
 ```
+pip install https://github.com/etetoolkit/ete/archive/master.zip
 pip install bottle cherrypy
 ```
 
