@@ -1,9 +1,9 @@
 ### Dependencies
 
 - ete3 
-- bottle and cherrypi
+- bottle and cherrypy
 ```
-pip install bottle chererypi
+pip install bottle cherrypy
 ```
 
 ### Demo
