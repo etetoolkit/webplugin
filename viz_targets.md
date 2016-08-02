@@ -3,7 +3,7 @@
 ## Priority level 1
 * shows clean square trees, economical with space
    * use space_test.nwk, display in < 8 vertical inches
-   *ETE: The size of every ETE graphical element can be customize (Faces).*
+   *ETE: The size of every ETE graphical element can be customize (Faces). Also the margins of each face*
 
 * capacity up to 500 easily displayed
    * use capacity_test.nwk, display and navigate in < 2 seconds
