@@ -26,27 +26,22 @@
 </div>
 
 <br>
-<div id='server_status'>
-</div>
-
+<div id='server_status'></div>
 
 <div style="clear:both;" >
-      <!-- This is the most important part. We start tree visualization by calling draw_tree function.
-           draw_tree(treeid, newick, container)
-       -->
+      <!-- Start tree visualization by calling draw_tree_image functionn and
+      pointing to a div container.  -->
       <input type='submit' value='Draw tree'  onClick='get_tree_image($("#tree").val(), "#img1") ;'>
       <input type='button' value='Clear' onClick='$(".ete_image").html("");'>
 </div>
     </div>
     <br>
+
     <div id="highlighter"></div>
+
     <!-- Tree container -->
     <div class="ete_image" id="img1"></div>
-
     <br>
 
   </body>
 </html>
-<script>
-update_server_status();
-</script>

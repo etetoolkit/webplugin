@@ -17,14 +17,14 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 class WebTreeHandler(object):
-    actions = []
-    tree_style = None
-
-    def __init__(self, newick, tid):
+    def __init__(self, newick, tid, actions, style):
         try:
             self.tree = Tree(newick)
         except NewickError:
             self.tree = Tree(newick, format=1)
+
+        self.tree.actions = actions
+        self.tree.tree_style = style
 
         self.treeid = tid
         self.mapid = "map_" + tid
@@ -36,7 +36,7 @@ class WebTreeHandler(object):
 
     @timeit
     def redraw(self):
-        base64_img, img_map = self.tree.render("%%return.PNG", tree_style=self.tree_style)
+        base64_img, img_map = self.tree.render("%%return.PNG", tree_style=self.tree.tree_style)
         html_map = self.get_html_map(img_map)
 
         ete_link = '<div style="margin:0px;padding:0px;text-align:left;"><a href="http://etetoolkit.org" style="font-size:7pt;" target="_blank" >Powered by etetoolkit</a></div>'
@@ -81,14 +81,14 @@ class WebTreeHandler(object):
     def get_avail_actions(self, nodeid):
         target = self.tree.search_nodes(_nid=int(nodeid))[0]
         action_list = []
-        for aindex, aname, show_fn, run_fn in self.actions:
+        for aindex, aname, show_fn, run_fn in self.tree.actions:
             if show_fn(target):
                 action_list.append([aindex, aname])
         return action_list
 
     def run_action(self, aindex, nodeid):
         target = self.tree.search_nodes(_nid=int(nodeid))[0]
-        run_fn = self.actions.actions[aindex][2]
+        run_fn = self.tree.actions.actions[aindex][2]
         return run_fn(self.tree, target)
 
 class NodeActions(object):

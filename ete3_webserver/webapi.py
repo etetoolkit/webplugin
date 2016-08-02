@@ -64,7 +64,7 @@ def get_tree_image():
     if not newick or not treeid:
         return web_return('No tree provided', response)
 
-    h = TREE_HANDLER(newick, treeid)
+    h = TREE_HANDLER(newick, treeid, DEFAULT_ACTIONS, DEFAULT_STYLE)
     LOADED_TREES[h.treeid] = h
 
     # Renders initial tree
@@ -90,7 +90,6 @@ def get_action():
 
 @post('/run_action')
 def run_action():
-    print "RUN ACTION"
     if request.json:
         source_dict = request.json
     else:
@@ -101,7 +100,6 @@ def run_action():
     faceid = source_dict.get('faceid', '').strip()
     aindex = source_dict.get('aindex', '').strip()
 
-
     if treeid and nodeid and aindex:
         h = LOADED_TREES[treeid]
         h.run_action(aindex, nodeid)
@@ -109,17 +107,18 @@ def run_action():
 
     return web_return(img, response)
 
-
+DEFAULT_ACTIONS = None
+DEFAULT_STYLE = None
 def start_server(node_actions=None, tree_style=None, host="localhost", port=8989):
-    global TREE_HANDLER
-    TREE_HANDLER = WebTreeHandler
+    global DEFAULT_STYLE, DEFAULT_ACTIONS
     if node_actions:
-        TREE_HANDLER.actions = node_actions
+        DEFAULT_ACTIONS = node_actions
     else:
-        TREE_HANDLER.actions = NodeActions()
+        DEFAULT_ACTIONS = NodeActions()
+
     if tree_style:
-        TREE_HANDLER.tree_style = tree_style
+        DEFAULT_STYLE = tree_style
     else:
-        TREE_HANDLER.tree_style = TreeStyle()
+        DEFAULT_STYLE = TreeStyle()
 
     run(host=host, port=port, server='cherrypy')

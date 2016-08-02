@@ -7,6 +7,7 @@ def show_action_root(node):
     if node.up:
         return True
     return False
+
 def run_action_root(tree, node):
     tree.set_outgroup(node)
 
@@ -19,6 +20,14 @@ def run_action_highlight(tree, node):
     node.img_style['size'] = 8
     node.img_style['hz_line_width'] = 4
 
+def show_action_change_style(node):
+    return True
+
+def run_action_change_style(tree, node):
+    if tree.tree_style == ts:
+        tree.tree_style = ts2
+    else:
+        tree.tree_style = ts
 
 def custom_layout(node):
     if node.is_leaf():
@@ -70,9 +79,13 @@ for line in tip_info_csv.split('\n'):
 ts = TreeStyle()
 ts.layout_fn = custom_layout
 ts.show_leaf_name = False
+
+ts2 = TreeStyle()
+
 actions = NodeActions()
 
 actions.add_action('Root here', show_action_root, run_action_root)
 actions.add_action('Highlight', show_action_highlight, run_action_highlight)
+actions.add_action('Change style', show_action_change_style, run_action_change_style)
 
 start_server(node_actions=actions, tree_style=ts)

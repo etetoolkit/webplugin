@@ -84,13 +84,7 @@ function makeid()
 }
 
 
-///////OLD STUFF
-
-
-
-
-
-
 $(document).ready(function(){
   hide_popup();
+  update_server_status();
 });
