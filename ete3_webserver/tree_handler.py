@@ -2,7 +2,7 @@ import time
 import string
 import random
 import logging as log
-from ete3 import Tree, TreeStyle
+from ete3 import PhyloTree, TreeStyle, NCBITaxa
 from ete3.parser.newick import NewickError
 
 def timeit(f):
@@ -16,15 +16,20 @@ def timeit(f):
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
+
+
 class WebTreeHandler(object):
-    def __init__(self, newick, tid, actions, style):
+    def __init__(self, newick, alg, taxid, tid, actions, style):
         try:
-            self.tree = Tree(newick)
+            self.tree = PhyloTree(newick, alignment = alg, alg_format="fasta")
         except NewickError:
             self.tree = Tree(newick, format=1)
 
         self.tree.actions = actions
         self.tree.tree_style = style
+        
+        self.taxid = taxid
+        #print taxid
 
         self.treeid = tid
         self.mapid = "map_" + tid
@@ -88,9 +93,17 @@ class WebTreeHandler(object):
 
     def run_action(self, aindex, nodeid):
         target = self.tree.search_nodes(_nid=int(nodeid))[0]
+        taxid = self.taxid
         run_fn = self.tree.actions.actions[aindex][2]
-        return run_fn(self.tree, target)
-
+        return run_fn(self.tree, target,taxid)
+    
+    
+    
+    #def run_action(self, aindex, nodeid):
+    #    target = self.tree.search_nodes(_nid=int(nodeid))[0]
+    #    run_fn = self.tree.actions.actions[aindex][2]
+    #    return run_fn(self.tree, target)
+    
 class NodeActions(object):
     def __str__(self):
         text = []

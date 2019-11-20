@@ -4,7 +4,9 @@ from StringIO import StringIO
 from bottle import (run, get, post, request, route, response, abort, hook,
                     error, HTTPResponse)
 
-from tree_handler import WebTreeHandler, NodeActions, TreeStyle
+from tree_handler import WebTreeHandler, NodeActions, TreeStyle, NCBITaxa
+
+
 
 LOADED_TREES = {}
 COMPRESS_DATA = True
@@ -58,13 +60,19 @@ def get_tree_image():
         source_dict = request.json
     else:
         source_dict = request.POST
+        
+    
     newick = source_dict.get('newick', '').strip()
+    alg = source_dict.get('alg', '').strip()
     treeid = source_dict.get('treeid', '').strip()
+    
+    taxid = source_dict.get('taxid', '').strip()
 
     if not newick or not treeid:
         return web_return('No tree provided', response)
 
-    h = TREE_HANDLER(newick, treeid, DEFAULT_ACTIONS, DEFAULT_STYLE)
+
+    h = TREE_HANDLER(newick, alg, taxid, treeid, DEFAULT_ACTIONS, DEFAULT_STYLE)
     LOADED_TREES[h.treeid] = h
 
     # Renders initial tree
@@ -77,6 +85,7 @@ def get_action():
         source_dict = request.json
     else:
         source_dict = request.POST
+        
 
     treeid = source_dict.get('treeid', '').strip()
     nodeid = source_dict.get('nodeid', '').strip()
@@ -94,7 +103,7 @@ def run_action():
         source_dict = request.json
     else:
         source_dict = request.POST
-
+        
     treeid = source_dict.get('treeid', '').strip()
     nodeid = source_dict.get('nodeid', '').strip()
     faceid = source_dict.get('faceid', '').strip()
@@ -109,8 +118,15 @@ def run_action():
 
 DEFAULT_ACTIONS = None
 DEFAULT_STYLE = None
+
 def start_server(node_actions=None, tree_style=None, host="localhost", port=8989):
     global DEFAULT_STYLE, DEFAULT_ACTIONS
+    
+    #if ncbi:
+    #    NCBI = ncbi
+    #else:
+    #    NCBI = connect_ncbitaxa()
+    
     if node_actions:
         DEFAULT_ACTIONS = node_actions
     else:
@@ -121,4 +137,4 @@ def start_server(node_actions=None, tree_style=None, host="localhost", port=8989
     else:
         DEFAULT_STYLE = TreeStyle()
 
-    run(host=host, port=port, server='cherrypy')
+    run(host=host, port=port)

@@ -8,11 +8,11 @@ function update_server_status(){
 
 }
 
-function get_tree_image(newick, recipient){
+function get_tree_image(newick, alg, taxid,recipient){
   var treeid = makeid();
   $(recipient).html('<div id="' + treeid + '">' + loading_img + '</div>');
   //$(recipient).fadeTo(500, 0.2);
-  var params = {'newick':newick, 'treeid':treeid};
+  var params = {'newick':newick, 'alg':alg , 'taxid':taxid, 'treeid':treeid};
   $('#'+treeid).load(ete_webplugin_URL+'/get_tree_image', params,
     function() {
             $('#'+treeid).fadeTo(100, 0.9);
