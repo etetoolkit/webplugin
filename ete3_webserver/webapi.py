@@ -1,10 +1,11 @@
 import gzip
 import logging as log
-from StringIO import StringIO
+#from StringIO import StringIO
+from io import StringIO, TextIOWrapper
 from bottle import (run, get, post, request, route, response, abort, hook,
                     error, HTTPResponse)
 
-from tree_handler import WebTreeHandler, NodeActions, TreeStyle, NCBITaxa
+from .tree_handler import WebTreeHandler, NodeActions, TreeStyle, NCBITaxa
 
 
 
@@ -27,7 +28,6 @@ def web_return(html, response):
     else:
         log.info('returning %0.3f KB' %(len(html)/1024.))
     return html
-
 
 # THESE ARE THE WEB SERVICES PROVIDING DATA TO THE WEB AND API
 @error(405)

@@ -9,7 +9,7 @@ def timeit(f):
     def a_wrapper_accepting_arguments(*args, **kargs):
         t1 = time.time()
         r = f(*args, **kargs)
-        print " %0.3f secs: %s" %(time.time() - t1, f.__name__)
+        #print " %0.3f secs: %s" %(time.time() - t1, f.__name__)
         return r
     return a_wrapper_accepting_arguments
 
@@ -21,7 +21,7 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 class WebTreeHandler(object):
     def __init__(self, newick, alg, taxid, tid, actions, style):
         try:
-            self.tree = PhyloTree(newick, alignment = alg, alg_format="fasta")
+            self.tree = PhyloTree(newick = newick, alignment = alg, alg_format="fasta")
         except NewickError:
             self.tree = Tree(newick, format=1)
 

@@ -4,7 +4,7 @@ from ete3 import TreeStyle, TextFace, add_face_to_node, ImgFace, BarChartFace, f
 # Custom ETE Tree styles and web actions
 
 def connect_ncbitaxa():
-    ncbi = NCBITaxa("/data/collaborations/spongilla_web/webplugin/ete3_webserver/taxa.sqlite")
+    ncbi = NCBITaxa("/data/collaborations/spongilla_web/webplugin_py2/ete3_webserver/taxa.sqlite")
     return(ncbi)
 
 def show_action_root(node):
@@ -51,7 +51,6 @@ def run_action_prune(tree,node,taxid):
     tax = taxid.rstrip().split(",")
     for el in tax:
         select_taxids.add(int(el))
-    print select_taxids
     for leaf in tree.get_leaves():
         name2taxid = ncbi.get_name_translator([leaf.name.split('|')[0]])
         taxid = name2taxid[leaf.name.split('|')[0]]
