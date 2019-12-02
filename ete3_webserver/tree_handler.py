@@ -21,7 +21,7 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 class WebTreeHandler(object):
     def __init__(self, newick, alg, taxid, tid, actions, style):
         try:
-            self.tree = PhyloTree(newick = newick, alignment = alg, alg_format="fasta")
+            self.tree = PhyloTree(newick, alignment = alg, alg_format="fasta")
         except NewickError:
             self.tree = Tree(newick, format=1)
 
@@ -42,10 +42,14 @@ class WebTreeHandler(object):
     @timeit
     def redraw(self):
         base64_img, img_map = self.tree.render("%%return.PNG", tree_style=self.tree.tree_style)
+        base64_img = base64_img.data().decode("utf-8")
+        
         html_map = self.get_html_map(img_map)
 
-        ete_link = '<div style="margin:0px;padding:0px;text-align:left;"><a href="http://etetoolkit.org" style="font-size:7pt;" target="_blank" >Powered by etetoolkit</a></div>'
         html_img = """<img id="%s" class="ete_tree_img" USEMAP="#%s" onLoad="javascript:bind_popup();" src="data:image/gif;base64,%s">""" %(self.imgid, self.mapid, base64_img)
+        #html_img = """<img id="%s" class="ete_tree_img" USEMAP="#%s" onLoad="javascript:bind_popup();" src="data:image/gif;base64,">""" %(self.imgid, self.mapid)
+        ete_link = '<div style="margin:0px;padding:0px;text-align:left;"><a href="http://etetoolkit.org" style="font-size:7pt;" target="_blank" >Powered by etetoolkit</a></div>'
+        
 
         tree_div_id = self.boxid
         return html_map+ '<div id="%s" >'%tree_div_id + html_img + ete_link + "</div>"

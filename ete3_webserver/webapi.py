@@ -1,7 +1,7 @@
 import gzip
 import logging as log
 #from StringIO import StringIO
-from io import StringIO, TextIOWrapper
+from io import StringIO, BytesIO
 from bottle import (run, get, post, request, route, response, abort, hook,
                     error, HTTPResponse)
 
@@ -16,9 +16,12 @@ TREE_HANDLER = WebTreeHandler
 
 def web_return(html, response):
     if COMPRESS_DATA and len(html) >= COMPRESS_MIN_BYTES:
-        chtmlF = StringIO()
+        #chtmlF = StringIO()
+        chtmlF = BytesIO()
+        print(html)
         z = gzip.GzipFile(fileobj=chtmlF, mode='w')
-        z.write(html)
+        
+        z.write(bytes(html,'utf-8'))
         z.close()
         chtmlF.seek(0)
         html = chtmlF.read()
