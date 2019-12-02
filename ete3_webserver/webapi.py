@@ -18,7 +18,6 @@ def web_return(html, response):
     if COMPRESS_DATA and len(html) >= COMPRESS_MIN_BYTES:
         #chtmlF = StringIO()
         chtmlF = BytesIO()
-        print(html)
         z = gzip.GzipFile(fileobj=chtmlF, mode='w')
         
         z.write(bytes(html,'utf-8'))

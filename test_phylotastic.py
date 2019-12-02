@@ -241,21 +241,7 @@ def custom_layout(node):
             add_face_to_node(support_face, node, column=0, position='branch-bottom')
             
 
-        
-orig_name={} 
-for line in open("/data/collaborations/spongilla/conversion_3.tsv"):
-    if line.strip() and not line.startswith("#"):
-        prot_name=line.split("\t")[0]
-        ori_name=line.split("\t")[1]
-        orig_name[prot_name]=ori_name
-        
-gene_sym={}
-for line in open("/data/collaborations/spongilla/subset_trees/mmseqs_swissprot/gene_sym.tsv"):
-    line=line.rstrip()
-    prot_name=line.split('\t')[0]
-    g_sym=line.split('\t')[1]
-    gene_sym[prot_name]=g_sym
-
+    
 # Server configuration
 
 ts = TreeStyle()
