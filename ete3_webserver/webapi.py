@@ -3,7 +3,7 @@ import logging as log
 #from StringIO import StringIO
 from io import StringIO, BytesIO
 from bottle import (run, get, post, request, route, response, abort, hook,
-                    error, HTTPResponse)
+                    error, HTTPResponse, static_file)
 
 from .tree_handler import WebTreeHandler, NodeActions, TreeStyle, NCBITaxa
 
@@ -49,6 +49,10 @@ def enable_cors():
     response.headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS, PUT'
     response.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept'
 
+@route('/')
+def index():
+    return static_file("webplugin_example.html", root='/home/django/webplugin/demo')
+
 @route('/status')
 def server_status():
     return web_return('alive', response)
@@ -81,6 +85,40 @@ def get_tree_image():
     img = h.redraw()
     return web_return(img, response)
 
+@post('/get_tree_from_paths')
+def get_tree_from_paths():
+    ''' Requires the next POST params:
+    - gene: gene name
+    - treeid: identifier for the new tree to be drawn
+    - tree: path to the tree file which contains the newick formatted tree
+    - alg: path to the alignment (MSA) file
+    '''
+
+    if request.json:
+        source_dict = request.json
+    else:
+        source_dict = request.POST
+
+    gene = source_dict.get('gene', '').strip()
+    treeid = source_dict.get('treeid', '').strip()
+    tree = source_dict.get('tree', '').strip()
+    alg = source_dict.get('alg', '').strip()
+
+    if not tree or not treeid:
+        return web_return('No tree provided', response)
+
+    ########################################
+    taxid = 0 # Is it really need it taxid??
+    ########################################
+    
+    h = TREE_HANDLER(tree, alg, taxid, treeid, DEFAULT_ACTIONS, DEFAULT_STYLE)
+    LOADED_TREES[h.treeid] = h
+
+    # Renders initial tree
+    img = h.redraw()
+    
+    return web_return(img, response)
+
 @post('/get_actions')
 def get_action():
     if request.json:
@@ -88,7 +126,6 @@ def get_action():
     else:
         source_dict = request.POST
         
-
     treeid = source_dict.get('treeid', '').strip()
     nodeid = source_dict.get('nodeid', '').strip()
     if treeid and nodeid:

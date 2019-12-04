@@ -48,9 +48,7 @@ class WebTreeHandler(object):
         html_map = self.get_html_map(img_map)
 
         html_img = """<img id="%s" class="ete_tree_img" USEMAP="#%s" onLoad="javascript:bind_popup();" src="data:image/gif;base64,%s">""" %(self.imgid, self.mapid, base64_img)
-        #html_img = """<img id="%s" class="ete_tree_img" USEMAP="#%s" onLoad="javascript:bind_popup();" src="data:image/gif;base64,">""" %(self.imgid, self.mapid)
         ete_link = '<div style="margin:0px;padding:0px;text-align:left;"><a href="http://etetoolkit.org" style="font-size:7pt;" target="_blank" >Powered by etetoolkit</a></div>'
-        
 
         tree_div_id = self.boxid
         return html_map+ '<div id="%s" >'%tree_div_id + html_img + ete_link + "</div>"
@@ -61,7 +59,7 @@ class WebTreeHandler(object):
             for x1, y1, x2, y2, nodeid, text in img_map["nodes"]:
                 text = "" if not text else text
                 area = img_map["node_areas"].get(int(nodeid), [0,0,0,0])
-                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s"
+                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" 
                                 onMouseOut='unhighlight_node();'
                                 onMouseOver='highlight_node("%s", "%s", "%s", %s, %s, %s, %s);'
                                 onClick='show_actions("%s", "%s");'
@@ -100,7 +98,7 @@ class WebTreeHandler(object):
         target = self.tree.search_nodes(_nid=int(nodeid))[0]
         taxid = self.taxid
         run_fn = self.tree.actions.actions[aindex][2]
-        return run_fn(self.tree, target,taxid)
+        return run_fn(self.tree, target, taxid)
     
     
     
