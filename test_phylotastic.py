@@ -1,31 +1,76 @@
+##
+
+import sys
+
 from ete3_webserver import NodeActions, start_server
 from ete3 import TreeStyle, TextFace, add_face_to_node, ImgFace, BarChartFace, faces,  AttrFace, SeqMotifFace, NodeStyle, NCBITaxa
 
 # Custom ETE Tree styles and web actions
 
 def connect_ncbitaxa():
-    ncbi = NCBITaxa("/data/collaborations/spongilla_web/webplugin_py2/ete3_webserver/taxa.sqlite")
+    # ncbi = NCBITaxa("/data/collaborations/spongilla_web/webplugin_py2/ete3_webserver/taxa.sqlite")
+    ncbi = NCBITaxa("./taxa.sqlite")
     return(ncbi)
+
+##
+# Actions to show
 
 def show_action_root(node):
     if node.up:
         return True
     return False
 
-def run_action_root(tree, node):
-    tree.set_outgroup(node)
-
 def show_action_highlight(node):
     # Any node can be highlighted
     return True
 
-def run_action_highlight(tree, node,taxid):
-    node.img_style['bgcolor'] = 'pink'
-    node.img_style['size'] = 8
-    node.img_style['hz_line_width'] = 4
-
 def show_action_change_style(node):
     return True
+
+def show_action_delete_node(node):
+    return True
+
+def show_action_prune(node):    
+    return True
+
+##
+# Run actions
+
+def run_action_root(tree, node, taxid):
+    tree.set_outgroup(node)
+    return
+    
+def toggle_highlight_node(node, prev_highlighted):
+    
+    if prev_highlighted:
+        node.img_style['bgcolor'] = 'white'
+        node.img_style['size'] = 0
+        node.img_style['hz_line_width'] = 0
+    else:
+        node.img_style['bgcolor'] = 'pink'
+        node.img_style['size'] = 8
+        node.img_style['hz_line_width'] = 4
+
+    node.highlighted = not prev_highlighted
+    print(node.highlighted)
+    
+    return
+
+def run_action_highlight(tree, node, taxid):
+
+    if not "highlighted" in node.features:
+        node.add_feature("highlighted", False)
+        
+    prev_highlighted = node.highlighted
+    
+    toggle_highlight_node(node, prev_highlighted)
+    
+    for child in node.traverse():
+        if not "highlighted" in child.features:
+            child.add_feature("highlighted", False)
+        toggle_highlight_node(child, prev_highlighted)
+        
+    return
 
 def run_action_change_style(tree, node, taxid):
     if tree.tree_style == ts:
@@ -33,20 +78,19 @@ def run_action_change_style(tree, node, taxid):
     else:
         tree.tree_style = ts
         
-def show_action_delete_node(node):
-    return True
-
-def run_action_delete_node(tree,node,taxid):
-    remove_node=node.detach()
-
-
-def show_action_prune(node):    
-    return True
-
-select_taxids = set()
-names = []
+def run_action_delete_node(tree, node, taxid):
+    parent = node.up
+    remove_node = node.detach()
+    
+    if len(parent.get_children()) == 0:
+        run_action_delete_node(tree, parent, taxid)
+        
+    return
 
 def run_action_prune(tree,node,taxid):
+    select_taxids = set()
+    names = []
+    
     ncbi=connect_ncbitaxa()
     tax = taxid.rstrip().split(",")
     for el in tax:
@@ -59,6 +103,8 @@ def run_action_prune(tree,node,taxid):
         
     tree.prune(names)
 
+##
+# Layout
 
 def custom_layout(node):
     
@@ -67,14 +113,10 @@ def custom_layout(node):
     if node.is_leaf():
         
         total_name = (node.name)
-        #node.name=(node.name.split('|')[0])
-        
-        node_name = node.name.split('|')[0]
-        name2taxid=ncbi.get_name_translator([node_name])
-        taxid=name2taxid[node_name]
-        lin = ncbi.get_lineage(int(taxid[0]))
+        if not total_name or total_name == "":
+            sys.stderr.write("Name of node is null or empty when creating custom layout.\n")
+            return
 
-        
         #seq_name = (total_name.split('.', 1)[-1])
         seq_name = (total_name.split('|')[1])
         other_info = (total_name.split('|')[2]) 
@@ -85,6 +127,15 @@ def custom_layout(node):
         aligned_name_face.margin_left = 5
         add_face_to_node(aligned_name_face, node, column=2, position='aligned')
         
+        #node.name=(node.name.split('|')[0])
+        node_name = node.name.split('|')[0]
+        if not node_name or node_name.strip() == "":
+            sys.stderr.write("Node name is null or empty when creating custom layout.\n")
+            return
+        
+        name2taxid=ncbi.get_name_translator([node_name])
+        taxid=name2taxid[node_name]
+        lin = ncbi.get_lineage(int(taxid[0]))
                
         if int('7742') in lin:
             N = TextFace('vertebrata', fsize=11, fgcolor="red")
@@ -240,6 +291,8 @@ def custom_layout(node):
             support_face.margin_bottom = 1
             add_face_to_node(support_face, node, column=0, position='branch-bottom')
             
+    return
+            
 
     
 # Server configuration
@@ -261,6 +314,6 @@ actions.add_action('Root here', show_action_root, run_action_root)
 actions.add_action('Highlight', show_action_highlight, run_action_highlight)
 actions.add_action('Change style', show_action_change_style, run_action_change_style)
 actions.add_action('Delete node', show_action_delete_node, run_action_delete_node)
-actions.add_action('Prune tree', show_action_prune, run_action_prune)
+#actions.add_action('Prune tree', show_action_prune, run_action_prune)
 
 start_server(node_actions=actions, tree_style=ts)
