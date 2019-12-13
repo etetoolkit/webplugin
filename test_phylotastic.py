@@ -4,8 +4,10 @@ import sys
 
 from ete3_webserver import NodeActions, start_server
 from ete3 import TreeStyle, TextFace, add_face_to_node, ImgFace, BarChartFace, faces,  AttrFace, SeqMotifFace, NodeStyle, NCBITaxa
-from ete_layout import connect_ncbitaxa, custom_layout
+from spongilla_layout import connect_ncbitaxa, custom_treestyle
 
+#if yoy want to use basic custom layout import basic_layout instead of spongilla_layout:
+        #from basic_layout import_custom_treestyle
 
 # Custom ETE Tree styles and web actions
 
@@ -105,13 +107,15 @@ def run_action_prune(tree,node,taxid):
     
 # Server configuration
 
-ts = TreeStyle()
-ts.layout_fn = custom_layout
-ts.show_leaf_name = False
-ts.branch_vertical_margin = 0
-ts.min_leaf_separation = 0
+#ts = TreeStyle()
+#ts.layout_fn = custom_layout
+#ts.show_leaf_name = False
+#ts.branch_vertical_margin = 0
+#ts.min_leaf_separation = 0
 
-
+#custom_treestyle, is a function in spongilla_layout.py, custom_treesyle run custom_layout function
+#which is also in spongilla_layout.py
+ts = custom_treestyle()
 ts2 = TreeStyle()
 
 ts_coll = TreeStyle()

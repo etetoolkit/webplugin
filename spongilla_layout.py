@@ -185,3 +185,10 @@ def custom_layout(node):
             
     return
             
+def custom_treestyle():
+    ts = TreeStyle()
+    ts.layout_fn = custom_layout
+    ts.show_leaf_name = False
+    ts.branch_vertical_margin = 0
+    ts.min_leaf_separation = 0
+    return ts

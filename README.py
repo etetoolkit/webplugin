@@ -17,3 +17,8 @@ python test_phylotastic.py
 - open ``demo/webplugin_example.html` in a browser running in the machine as the test script.
 
 
+##Customized layout:
+    basic_layout.py: basic layout for general projects
+    spongilla_layout.py: custom layout for spongilla project
+
+
