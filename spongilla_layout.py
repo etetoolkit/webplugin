@@ -1,175 +1,158 @@
-from ete3 import TreeStyle, TextFace, add_face_to_node, ImgFace, BarChartFace, faces,  AttrFace, SeqMotifFace, NodeStyle, NCBITaxa
+from ete3 import TreeStyle, TextFace, add_face_to_node, ImgFace, BarChartFace, faces,  AttrFace, SeqMotifFace, NodeStyle, NCBITaxa, PhyloTree
 
-def connect_ncbitaxa():
-    # ncbi = NCBITaxa("/data/collaborations/spongilla_web/webplugin_py2/ete3_webserver/taxa.sqlite")
-    ncbi = NCBITaxa("./taxa.sqlite")
-    return(ncbi)
+ncbi = None
+orig_name = None
+NCBIPATH = None
+TABLEPATH = None
+
+def init_layout(ncbipath, tablepath):
+    global NCBIPATH, TABLEPATH
+    NCBIPATH = ncbipath
+    TABLEPATH = tablepath
+    return
 
 def custom_layout(node):
+    global ncbi, NCBIPATH
+    if not ncbi:
+        ncbi = NCBITaxa(NCBIPATH)
     
-    ncbi=connect_ncbitaxa()
     
+    global orig_name, TABLEPATH
+    if not orig_name:
+        orig_name = {}
+        with open(TABLEPATH) as tablefn:
+            for line in tablefn:
+                if line.strip() and not line.startswith("#"):
+                    line_data = line.strip().split("\t")
+                    name_in_tree=line_data[0]
+                    name_to_show=line_data[2]
+                    orig_name[name_in_tree]=name_to_show
+    
+        
     if node.is_leaf():
         
         total_name = (node.name)
-        if not total_name or total_name == "":
-            sys.stderr.write("Name of node is null or empty when creating custom layout.\n")
-            return
-
-        #seq_name = (total_name.split('.', 1)[-1])
-        seq_name = (total_name.split('|')[1])
-        other_info = (total_name.split('|')[2]) 
         
-        aligned_name_face = TextFace(seq_name, fgcolor='brown', fsize=11)
-        aligned_name_face.margin_top = 0
-        aligned_name_face.margin_bottom = 0
-        aligned_name_face.margin_left = 5
-        add_face_to_node(aligned_name_face, node, column=2, position='aligned')
-        
-        #node.name=(node.name.split('|')[0])
         node_name = node.name.split('|')[0]
-        if not node_name or node_name.strip() == "":
-            sys.stderr.write("Node name is null or empty when creating custom layout.\n")
-            return
-        
         name2taxid=ncbi.get_name_translator([node_name])
         taxid=name2taxid[node_name]
         lin = ncbi.get_lineage(int(taxid[0]))
-               
-        if int('7742') in lin:
-            N = TextFace('vertebrata', fsize=11, fgcolor="red")
-            N.margin_left = 5
-            N.background.color = "Linen"
-            add_face_to_node(N, node, column=3, position = 'aligned')
-            
-        if int('6040') in lin:
-            N = TextFace('porifera', fsize=11, fgcolor="green")
-            N.margin_left = 5
-            N.background.color = "Linen"
-            add_face_to_node(N, node, column=3, position = 'aligned')  
-          
-        if int('6073') in lin:
-            N = TextFace('cnidario', fsize=11, fgcolor="orange")
-            N.margin_left = 5
-            N.background.color = "Linen"
-            add_face_to_node(N, node, column=3, position = 'aligned')    
         
-        if int('33317') in lin:
-            N = TextFace('protostomia', fsize=11, fgcolor="blue")
-            N.margin_left = 5
-            N.background.color = "Linen"
-            add_face_to_node(N, node, column=3, position = 'aligned')    
+        prot_info = (total_name.split('|')[2])#.split('.',1)[1]
+        prot_id = prot_info.split('.', 1)[1]
+        if len(prot_id) > 50:
+            prot_id = prot_id[0:50]
         
-        if int('10197') in lin:
-            N = TextFace('Ctenophora', fsize=11, fgcolor="indigo")
-            N.margin_left = 5
-            N.background.color = "Linen"
-            add_face_to_node(N, node, column=3, position = 'aligned')   
         
-        if int('10226') in lin:
-            N = TextFace('Ctenophora', fsize=11, fgcolor="sienna")
-            N.margin_left = 5
-            N.background.color = "Linen"
-            add_face_to_node(N, node, column=3, position = 'aligned') 
-            
-        if int('6157') in lin:
-            N = TextFace('Platyhelminthes', fsize=11, fgcolor="olive")
-            N.margin_left = 5
-            N.background.color = "Linen"
-            add_face_to_node(N, node, column=3, position = 'aligned') 
-            
-        if int('7735') in lin:
-            N = TextFace('Cephalochordata', fsize=11, fgcolor="skyblue")
-            N.margin_left = 5
-            N.background.color = "Linen"
-            add_face_to_node(N, node, column=3, position = 'aligned') 
+        if prot_info in orig_name.keys():
+            gene_name = orig_name[prot_info]
         
-             
-        tax, seqs_info = other_info.split('.', 1)
-        try:
-            tax = int(tax)
-        except:
-            tax = tax
-            
-        
-        if tax in lin:
-            aligned_name_face = TextFace(seqs_info, fgcolor='grey', fsize=11)
-            aligned_name_face.margin_top = 0
-            aligned_name_face.margin_bottom = 0
-            aligned_name_face.margin_left = 5
-            add_face_to_node(aligned_name_face, node, column=4, position='aligned')
-            
         else:
-            aligned_name_face = TextFace(other_info, fgcolor='red', fsize=11)
-            aligned_name_face.margin_top = 0
-            aligned_name_face.margin_bottom = 0
-            aligned_name_face.margin_left = 5
-            add_face_to_node(aligned_name_face, node, column=4, position='aligned')
-            
+            gene_name = (total_name.split('|')[1])
         
+        aligned_pname_face = TextFace(prot_id, fgcolor='grey', fsize=11)
+        aligned_pname_face.margin_top = 0
+        aligned_pname_face.margin_bottom = 0
+        aligned_pname_face.margin_right = 20
+        add_face_to_node(aligned_pname_face, node, column=1, position='branch-right')
+        
+        aligned_gname_face = TextFace(gene_name, fgcolor='black', fsize=11)
+        aligned_gname_face.margin_top = 0
+        aligned_gname_face.margin_bottom = 0
+        aligned_gname_face.margin_left = 5
+        add_face_to_node(aligned_gname_face, node, column=2, position='branch-right')
         
         seqFace = SeqMotifFace(node.sequence, gap_format="blank")
-        add_face_to_node(seqFace, node, column=5, position="aligned")
+        add_face_to_node(seqFace, node, column=4, position="aligned")
         
-        node.img_style['size'] = 0
-            
-            
-        if node_name.startswith("Homo"):
+        
+        if  node_name.startswith("Homo"):
             # Add an static face that handles the node name
             N = TextFace(node_name, fsize=11, fgcolor="red")
-            add_face_to_node(N, node, column=0, position = 'branch-right')
+            N.margin_right= 20
+            faces.add_face_to_node(N, node, column=0, position = 'branch-right')
 
         elif node_name.startswith("Spongilla"):
             N = TextFace(node_name, fsize=11, fgcolor="green")
-            add_face_to_node(N, node, column=0, position = 'branch-right')
+            N.margin_right= 20
+            faces.add_face_to_node(N, node, column=0, position = 'branch-right')
             
-        elif node_name.startswith("Sycon"):
+        elif  node_name.startswith("Sycon"):
             N = TextFace(node_name, fsize=11, fgcolor="green")
-            add_face_to_node(N, node, column=0, position = 'branch-right')
+            N.margin_right= 20
+            faces.add_face_to_node(N, node, column=0, position = 'branch-right')
 
         elif  node_name.startswith("Amphimedon"):
             N = TextFace(node_name, fsize=11, fgcolor="green")
-            add_face_to_node(N, node, column=0, position = 'branch-right')
+            N.margin_right= 20
+            faces.add_face_to_node(N, node, column=0, position = 'branch-right')
 
-        elif node_name.startswith("Oscarella"):
+        elif  node_name.startswith("Oscarella"):
             N = TextFace(node_name, fsize=11, fgcolor="green")
-            add_face_to_node(N, node, column=0, position = 'branch-right')
+            N.margin_right= 20
+            faces.add_face_to_node(N, node, column=0, position = 'branch-right')
 
         elif  node_name.startswith("Gallus"):
             N = TextFace(node_name, fsize=11, fgcolor="red")
-            add_face_to_node(N, node, column=0, position = 'branch-right')
+            N.margin_right= 20
+            faces.add_face_to_node(N, node, column=0, position = 'branch-right')
 
         elif  node_name.startswith("Branchiostoma"):
             N = TextFace(node_name, fsize=11, fgcolor="red")
-            add_face_to_node(N, node, column=0, position = 'branch-right')
+            N.margin_right= 20
+            faces.add_face_to_node(N, node, column=0, position = 'branch-right')
 
-        elif  node_name.startswith("Trichoplax"):
+        elif node_name.startswith("Trichoplax"):
             N = TextFace(node_name, fsize=11, fgcolor="orange")
-            add_face_to_node(N, node, column=0, position = 'branch-right')
+            N.margin_right= 20
+            faces.add_face_to_node(N, node, column=0, position = 'branch-right')
 
         elif node_name.startswith("Nematostella"):
             N = TextFace(node_name, fsize=11, fgcolor="orange")
-            add_face_to_node(N, node, column=0, position = 'branch-right')
+            N.margin_right= 20
+            faces.add_face_to_node(N, node, column=0, position = 'branch-right')
 
-        elif node_name.startswith("Hydra"):
+        elif  node_name.startswith("Hydra"):
             N = TextFace(node_name, fsize=11, fgcolor="orange")
-            add_face_to_node(N, node, column=0, position = 'branch-right')
+            N.margin_right= 20
+            faces.add_face_to_node(N, node, column=0, position = 'branch-right')
 
         elif  node_name.startswith("Drosophila"):
             N = TextFace(node_name, fsize=11, fgcolor="blue")
-            add_face_to_node(N, node, column=0, position = 'branch-right')
+            N.margin_right= 20
+            faces.add_face_to_node(N, node, column=0, position = 'branch-right')
 
         elif  node_name.startswith("Crassostrea"):
             N = TextFace(node_name, fsize=11, fgcolor="blue")
-            add_face_to_node(N, node, column=0, position = 'branch-right')
+            N.margin_right= 20
+            faces.add_face_to_node(N, node, column=0, position = 'branch-right')
 
-        else:
-            name_face = TextFace(node_name, fgcolor='#333333', fsize=11)
-            name_face.margin_top = 0
-            name_face.margin_bottom = 0
-            add_face_to_node(name_face, node, column=0, position='branch-right')
+        elif node.is_leaf():
+            N = TextFace(node_name, fsize=11, fgcolor="black")
+            N.margin_right= 20
+            faces.add_face_to_node(N, node, column=0)
             
-        
+            
+            
+        if int('7742') in lin:
+            N = TextFace('vertebrata', fsize=11, fgcolor="red")
+            N.margin_left = 20
+            N.background.color = "Linen"
+            add_face_to_node(N, node, column=3, position = 'branch-right')
+            
+        if int('6040') in lin:
+            N = TextFace('porifera', fsize=11, fgcolor="green")
+            N.margin_left = 20
+            N.background.color = "Linen"
+            add_face_to_node(N, node, column=3, position = 'branch-right')  
+          
+        if int('6073') in lin:
+            N = TextFace('cnidario', fsize=11, fgcolor="orange")
+            N.margin_left = 20
+            N.background.color = "Linen"
+            add_face_to_node(N, node, column=3, position = 'branch-right')   
+            
+    
     else:
         node.img_style['size'] = 3
         node.img_style['shape'] = 'square'
@@ -183,8 +166,24 @@ def custom_layout(node):
             support_face.margin_bottom = 1
             add_face_to_node(support_face, node, column=0, position='branch-bottom')
             
-    return
-            
+
+def spongilla_predraw(tree):
+    taxa_list = ["Homo sapiens", "Crassostrea gigas", "Gallus gallus", "Branchiostoma floridae", "Drosophila melanogaster", "Hydra vulgaris", "Nematostella vectensis",
+             "Trichoplax adhaerens", "Spongilla lacustris", "Oscarella carmela", "Amphimedon queenslandica", "Capsaspora owczarzaki", "Monosiga brevicollis",
+             "Salpingoeca rosetta", "Sycon ciliatum"]
+    
+    R = tree.get_midpoint_outgroup()
+    tree.set_outgroup(R)
+    prune_list = []
+    for leaf in tree:
+        sci_name = leaf.name.split('|')[0]
+        if sci_name in taxa_list:
+               prune_list.append(leaf.name)
+                
+    #tree.prune(prune_list, preserve_branch_length=True)
+
+           
+        
 def custom_treestyle():
     ts = TreeStyle()
     ts.layout_fn = custom_layout
@@ -192,3 +191,7 @@ def custom_treestyle():
     ts.branch_vertical_margin = 0
     ts.min_leaf_separation = 0
     return ts
+
+
+
+

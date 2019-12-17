@@ -4,7 +4,7 @@ import sys
 
 from ete3_webserver import NodeActions, start_server
 from ete3 import TreeStyle, TextFace, add_face_to_node, ImgFace, BarChartFace, faces,  AttrFace, SeqMotifFace, NodeStyle, NCBITaxa
-from spongilla_layout import connect_ncbitaxa, custom_treestyle
+from spongilla_layout import custom_treestyle, spongilla_predraw, init_layout
 
 #if yoy want to use basic custom layout import basic_layout instead of spongilla_layout:
         #from basic_layout import_custom_treestyle
@@ -27,9 +27,6 @@ def show_action_change_style(node):
     return True
 
 def show_action_delete_node(node):
-    return True
-
-def show_action_prune(node):    
     return True
 
 ##
@@ -86,32 +83,15 @@ def run_action_delete_node(tree, node, taxid):
         
     return
 
-def run_action_prune(tree,node,taxid):
-    select_taxids = set()
-    names = []
-    
-    ncbi=connect_ncbitaxa()
-    tax = taxid.rstrip().split(",")
-    for el in tax:
-        select_taxids.add(int(el))
-    for leaf in tree.get_leaves():
-        name2taxid = ncbi.get_name_translator([leaf.name.split('|')[0]])
-        taxid = name2taxid[leaf.name.split('|')[0]]
-        if taxid[0] in select_taxids:
-            names.append(leaf.name)
-        
-    tree.prune(names)
-
-
-
-    
+   
 # Server configuration
 
-#ts = TreeStyle()
-#ts.layout_fn = custom_layout
-#ts.show_leaf_name = False
-#ts.branch_vertical_margin = 0
-#ts.min_leaf_separation = 0
+
+NCBIPATH = "/data/collaborations/spongilla_web/webplugin_py2/ete3_webserver/taxa.sqlite"
+TABLEPATH = "/data/collaborations/spongilla_web/data_jake/test_files_for_jaime/spongilla_protein_renamining_table.txt"
+
+init_layout(NCBIPATH, TABLEPATH)
+
 
 #custom_treestyle, is a function in spongilla_layout.py, custom_treesyle run custom_layout function
 #which is also in spongilla_layout.py
@@ -126,6 +106,5 @@ actions.add_action('Root here', show_action_root, run_action_root)
 actions.add_action('Highlight', show_action_highlight, run_action_highlight)
 actions.add_action('Change style', show_action_change_style, run_action_change_style)
 actions.add_action('Delete node', show_action_delete_node, run_action_delete_node)
-#actions.add_action('Prune tree', show_action_prune, run_action_prune)
 
-start_server(node_actions=actions, tree_style=ts)
+start_server(node_actions=actions, tree_style=ts, predraw_fn=spongilla_predraw))

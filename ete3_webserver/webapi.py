@@ -5,7 +5,7 @@ from io import StringIO, BytesIO
 from bottle import (run, get, post, request, route, response, abort, hook,
                     error, HTTPResponse, static_file)
 
-from .tree_handler import WebTreeHandler, NodeActions, TreeStyle, NCBITaxa
+from .tree_handler import WebTreeHandler, NodeActions, TreeStyle
 
 
 
@@ -78,7 +78,7 @@ def get_tree_image():
         return web_return('No tree provided', response)
 
 
-    h = TREE_HANDLER(newick, alg, taxid, treeid, DEFAULT_ACTIONS, DEFAULT_STYLE)
+    h = TREE_HANDLER(newick, alg, taxid, treeid, DEFAULT_ACTIONS, DEFAULT_STYLE, PREDRAW_FN)
     LOADED_TREES[h.treeid] = h
 
     # Renders initial tree
@@ -111,7 +111,7 @@ def get_tree_from_paths():
     taxid = 0 # Is it really need it taxid??
     ########################################
     
-    h = TREE_HANDLER(tree, alg, taxid, treeid, DEFAULT_ACTIONS, DEFAULT_STYLE)
+    h = TREE_HANDLER(tree, alg, taxid, treeid, DEFAULT_ACTIONS, DEFAULT_STYLE, PREDRAW_FN))
     LOADED_TREES[h.treeid] = h
 
     # Renders initial tree
@@ -157,14 +157,11 @@ def run_action():
 
 DEFAULT_ACTIONS = None
 DEFAULT_STYLE = None
+PREDRAW_FN = None
 
-def start_server(node_actions=None, tree_style=None, host="localhost", port=8989):
-    global DEFAULT_STYLE, DEFAULT_ACTIONS
+def start_server(node_actions=None, tree_style=None, predraw_fn=None, host="localhost", port=8989):
+    global DEFAULT_STYLE, DEFAULT_ACTIONS, PREDRAW_FN
     
-    #if ncbi:
-    #    NCBI = ncbi
-    #else:
-    #    NCBI = connect_ncbitaxa()
     
     if node_actions:
         DEFAULT_ACTIONS = node_actions
@@ -175,5 +172,7 @@ def start_server(node_actions=None, tree_style=None, host="localhost", port=8989
         DEFAULT_STYLE = tree_style
     else:
         DEFAULT_STYLE = TreeStyle()
+        
+    PREDRAW_FN = predraw_fn
 
     run(host=host, port=port)

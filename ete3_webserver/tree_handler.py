@@ -19,13 +19,14 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 
 
 class WebTreeHandler(object):
-    def __init__(self, newick, alg, taxid, tid, actions, style):
+    def __init__(self, newick, alg, taxid, tid, actions, style, predraw_fn=None):
         try:
-            #self.tree = PhyloTree(newick, alignment = alg, alg_format="fasta")
             self.tree = PhyloTree(newick = newick, alignment = alg, alg_format="fasta")            
         except NewickError:
             self.tree = Tree(newick, format=1)
-
+            
+        if predraw_fn:
+            predraw_fn(self.tree)
         self.tree.actions = actions
         self.tree.tree_style = style
         
