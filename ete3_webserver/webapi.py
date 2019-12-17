@@ -111,7 +111,7 @@ def get_tree_from_paths():
     taxid = 0 # Is it really need it taxid??
     ########################################
     
-    h = TREE_HANDLER(tree, alg, taxid, treeid, DEFAULT_ACTIONS, DEFAULT_STYLE, PREDRAW_FN))
+    h = TREE_HANDLER(tree, alg, taxid, treeid, DEFAULT_ACTIONS, DEFAULT_STYLE, PREDRAW_FN)
     LOADED_TREES[h.treeid] = h
 
     # Renders initial tree

@@ -107,4 +107,4 @@ actions.add_action('Highlight', show_action_highlight, run_action_highlight)
 actions.add_action('Change style', show_action_change_style, run_action_change_style)
 actions.add_action('Delete node', show_action_delete_node, run_action_delete_node)
 
-start_server(node_actions=actions, tree_style=ts, predraw_fn=spongilla_predraw))
+start_server(node_actions=actions, tree_style=ts, predraw_fn=spongilla_predraw)
