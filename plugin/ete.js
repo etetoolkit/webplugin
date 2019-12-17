@@ -33,13 +33,17 @@ function get_tree_from_paths(gene, alg, tree, recipient){
     hide_popup();
     var treeid = makeid();
     $(recipient).fadeTo(500, 0);
-    $(recipient).html('<div id="' + treeid + '">' + loading_img + '</div>');
+    $("#loading_img").html('<div id="' + treeid + '">' + loading_img + '</div>');
+    // $(recipient).html('<div id="' + treeid + '">' + loading_img + '</div>');
     var params = {'gene':gene, 'alg':alg, 'tree':tree, 'treeid':treeid};
-    console.log(params);
+    // console.log(params);
     $('#'+treeid).load(ete_webplugin_URL+'/get_tree_from_paths', params,
 		       function() {
 			   // $('#'+treeid).fadeTo(500, 1.0);
 			   $(recipient).fadeTo(500, 1.0);
+			   // , function(){
+			   //     $("#loading_img").html('LOADED');
+			   // });
 		       });
 }
 
