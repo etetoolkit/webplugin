@@ -87,7 +87,7 @@ def run_action_delete_node(tree, node, taxid):
 # Server configuration
 
 
-NCBIPATH = "/home/django/webplugin/taxa.sqlite"
+NCBIPATH = "/home/django/taxa.sqlite"
 TABLEPATH = "/home/django/spongilla_data/spongilla_protein_renamining_table.txt"
 
 init_layout(NCBIPATH, TABLEPATH)
