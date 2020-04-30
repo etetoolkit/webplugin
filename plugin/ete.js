@@ -4,7 +4,7 @@ var ete_webplugin_URL = "http://eteview.compgenomics.org";
 var loading_img = '<img border=0 src="loader.gif">';
 
 function update_server_status(){
-  console.log('updating');
+  console.log('updating server status');
   $('#server_status').load(ete_webplugin_URL+"/status");
 }
 
@@ -19,7 +19,6 @@ function get_tree_image(newick, alg, taxid,recipient){
   });
 }
 
-// CPCantalapiedra 2019
 function clear_tree_img(recipient){
     hide_popup();
     $(recipient).fadeTo(500, 0, function() {

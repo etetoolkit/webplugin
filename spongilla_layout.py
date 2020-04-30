@@ -63,6 +63,7 @@ def custom_layout(node):
         add_face_to_node(aligned_gname_face, node, column=2, position='branch-right')
         
         seqFace = SeqMotifFace(node.sequence, gap_format="blank")
+        seqFace.margin_left = 5
         add_face_to_node(seqFace, node, column=4, position="aligned")
         
         
@@ -136,21 +137,21 @@ def custom_layout(node):
             
         if int('7742') in lin:
             N = TextFace('vertebrata', fsize=11, fgcolor="red")
-            N.margin_left = 20
+            #N.margin_left = 20
             N.background.color = "Linen"
-            add_face_to_node(N, node, column=3, position = 'branch-right')
+            add_face_to_node(N, node, column=3, position = 'aligned')
             
         if int('6040') in lin:
             N = TextFace('porifera', fsize=11, fgcolor="green")
-            N.margin_left = 20
+            #N.margin_left = 20
             N.background.color = "Linen"
-            add_face_to_node(N, node, column=3, position = 'branch-right')  
+            add_face_to_node(N, node, column=3, position = 'aligned')  
           
         if int('6073') in lin:
             N = TextFace('cnidario', fsize=11, fgcolor="orange")
-            N.margin_left = 20
+            #N.margin_left = 20
             N.background.color = "Linen"
-            add_face_to_node(N, node, column=3, position = 'branch-right')   
+            add_face_to_node(N, node, column=3, position = 'aligned')   
             
     
     else:
