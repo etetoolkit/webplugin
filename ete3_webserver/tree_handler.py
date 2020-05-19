@@ -2,29 +2,36 @@ import time
 import string
 import random
 import logging as log
-from ete3 import Tree, TreeStyle
+from ete3 import PhyloTree, TreeStyle, NCBITaxa
 from ete3.parser.newick import NewickError
 
 def timeit(f):
     def a_wrapper_accepting_arguments(*args, **kargs):
         t1 = time.time()
         r = f(*args, **kargs)
-        print " %0.3f secs: %s" %(time.time() - t1, f.__name__)
+        #print " %0.3f secs: %s" %(time.time() - t1, f.__name__)
         return r
     return a_wrapper_accepting_arguments
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
+
+
 class WebTreeHandler(object):
-    def __init__(self, newick, tid, actions, style):
+    def __init__(self, newick, alg, taxid, tid, actions, style, predraw_fn=None):
         try:
-            self.tree = Tree(newick)
+            self.tree = PhyloTree(newick = newick, alignment = alg, alg_format="fasta")            
         except NewickError:
             self.tree = Tree(newick, format=1)
-
+            
+        if predraw_fn:
+            predraw_fn(self.tree)
         self.tree.actions = actions
         self.tree.tree_style = style
+        
+        self.taxid = taxid
+        #print taxid
 
         self.treeid = tid
         self.mapid = "map_" + tid
@@ -37,10 +44,12 @@ class WebTreeHandler(object):
     @timeit
     def redraw(self):
         base64_img, img_map = self.tree.render("%%return.PNG", tree_style=self.tree.tree_style)
+        base64_img = base64_img.data().decode("utf-8")
+        
         html_map = self.get_html_map(img_map)
 
-        ete_link = '<div style="margin:0px;padding:0px;text-align:left;"><a href="http://etetoolkit.org" style="font-size:7pt;" target="_blank" >Powered by etetoolkit</a></div>'
         html_img = """<img id="%s" class="ete_tree_img" USEMAP="#%s" onLoad="javascript:bind_popup();" src="data:image/gif;base64,%s">""" %(self.imgid, self.mapid, base64_img)
+        ete_link = '<div style="margin:0px;padding:0px;text-align:left;"><a href="http://etetoolkit.org" style="font-size:7pt;" target="_blank" >Powered by etetoolkit</a></div>'
 
         tree_div_id = self.boxid
         return html_map+ '<div id="%s" >'%tree_div_id + html_img + ete_link + "</div>"
@@ -51,7 +60,7 @@ class WebTreeHandler(object):
             for x1, y1, x2, y2, nodeid, text in img_map["nodes"]:
                 text = "" if not text else text
                 area = img_map["node_areas"].get(int(nodeid), [0,0,0,0])
-                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s"
+                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" 
                                 onMouseOut='unhighlight_node();'
                                 onMouseOver='highlight_node("%s", "%s", "%s", %s, %s, %s, %s);'
                                 onClick='show_actions("%s", "%s");'
@@ -88,9 +97,17 @@ class WebTreeHandler(object):
 
     def run_action(self, aindex, nodeid):
         target = self.tree.search_nodes(_nid=int(nodeid))[0]
+        taxid = self.taxid
         run_fn = self.tree.actions.actions[aindex][2]
-        return run_fn(self.tree, target)
-
+        return run_fn(self.tree, target, taxid)
+    
+    
+    
+    #def run_action(self, aindex, nodeid):
+    #    target = self.tree.search_nodes(_nid=int(nodeid))[0]
+    #    run_fn = self.tree.actions.actions[aindex][2]
+    #    return run_fn(self.tree, target)
+    
 class NodeActions(object):
     def __str__(self):
         text = []
